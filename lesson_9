@@ -1,0 +1,530 @@
+### Redux
+
+Алексей Опалев
+
+<img style="margin: 20px 50px 0 0" class="plain" src="images/track.svg" width=200px height=200px />
+<img style="margin: 20px 0 0 50px" class="plain" src="images/atom.svg" width=190px height=190px />
+
+
+![Important](images/important.jpg)
+
+
+
+### План лекции
+
+1. TLDR [что нужно сделать дома]
+2. Flux
+3. Redux
+4. React-Redux
+5. Домашнее задание
+
+
+
+### Что делать дома (ДЗ)
+
+
+### Подключаем Redux в проект
+
+<font size="30px">Необходимо:</font>
+
+* Подключить redux с помощью библиотеки react-redux
+* Определить изменяемые данные, которые нужны в нескольких компонентах
+* Объявить эти данные в store
+* Подключить к store компоненты, которые используют эти данные
+
+
+#### Что для этого сделать
+
+1. Установить новые зависимости (redux redux-thunk react-redux)
+1. Создать constants/ActionTypes.js
+2. Создать actions.js
+3. Создать reducers/messages.js // и любые другие редьюсеры по желанию
+4. Создать reducers/index.js
+5. Создать store.js
+6. Обернуть приложение в Provider
+7. В компонентах функции обернуть в connect
+
+Пример: https://github.com/track-mail-ru/cra-thunk
+
+
+
+### Flux
+
+<img class="plain"  src="images/lesson_9/flux.svg" width="50%"/>
+
+
+#### Flux in a nutshell
+
+1. Прдеставление* создает (dispatch) событие (action).
+2. Хранилище данных (store) принимает событие от представления, изменяет данные.
+3. Хранилище данных создает событие об изменении данных.
+4. Представление принимает событие от хранилища данных и перерисовывает контент с новыми данными.
+
+`*` Представление – обработчик/хэндлер/вьюха/view
+
+
+#### Задача Flux
+
+Сделать изменение данных предсказуемым.
+
+<img class="plain"  src="images/lesson_9/flux_the_problem.png" width="50%"/>
+
+
+#### Подход Flux
+
+Однонаправленный поток данных.
+
+[Красивое представление]
+
+<img class="plain"  src="images/lesson_9/flux_flow.png" width="100%"/>
+
+
+Близкое к правде представление
+
+<img src="images/lesson_9/flux_flow_real.png" width="70%"/>
+
+
+<img src="images/lesson_9/flux_schema.png" width="70%"/>
+
+
+#### MVC vs Flux
+
+
+#### MVC
+
+<img src="images/lesson_9/mvc_diagram.png"/>
+
+
+#### Flux
+
+<img src="images/lesson_9/flux_diagram.png"/>
+
+
+1. Каждый компонент (обработчик) может создавать событие (action)
+2. Все события проходят через один диспетчер
+3. Каждое событие может быть обработано несколькими хранилищами (store)
+4. Одно хранилище данных может зависет от другого хранилища
+5. Каждое хранилище данных может может влиять на перерендеринг нескольких представлений
+6. Каждое представление может зависеть от нескольких хранилищ
+
+
+![brain](images/lesson_9/brain.png)
+
+
+The case for flux by Dan Abramov:
+
+https://medium.com/swlh/the-case-for-flux-379b7d1982c6
+
+Flux for stupid people:
+
+https://blog.andrewray.me/flux-for-stupid-people/
+
+Перевод: https://habr.com/ru/post/249279/
+
+Официальный репозиторий Flux:
+
+https://github.com/facebook/flux
+
+
+
+### Redux
+
+<img class="plain"  src="images/lesson_9/redux_logo.svg" width="40%"/>
+
+
+### Основные принципы Redux
+
+1. Состояние приложеня хранится в единственном дереве состояний (store)
+2. Состояние может изменяться только через вызов событий (actions)
+3. Редьюсеры (reducer) – чистые функции, которые возвращают новое состояние (state) в ответ на событие (action)
+
+
+`*` Редьюсер - концепция в js, где состояние приложения управляется специальными функциями (редьюсерами).
+Такие функции принмают на вход текущее состояние и событие, возвращая новый объект состояния.
+
+
+### Ключевые абстракции Redux
+
+* Store
+* Actions, action creator
+* reducers
+
+
+#### Store
+
+Хранилище состояния приложения; хранилище данных.
+
+
+#### Actions
+
+JS объект, описывающий изменение состояния приложения.
+
+```js
+{
+   type: FETCH_DATA_SUCCESS,  // у каждого объекта есть тип
+   payload: data  // payload – необязательный ключ. Значение может быть любым
+}
+```
+
+
+#### Action creators
+
+Функции, возвращающие action.
+
+```js
+const fetchDataSuccess = (data) => ({
+  type: FETCH_DATA_SUCCESS,
+  payload: data,
+})
+
+const fetchDataFailure = (data) => ({
+  type: FETCH_DATA_FAILURE,
+  payload: data,  // можно вернуть сразу сообщение с ошибкой: payload: data.message
+})
+```
+
+
+#### Reducers
+
+Редьюсер – чистая функцая с двумя параметрами:
+
+* Текущее состояние)
+* событие, описывающее изменеие состояния
+
+Редьюсер вызывается каждый раз, когда вызывается событие (action)
+
+
+```js
+const initialState = {
+  contacts: [],
+  pages: -1
+}
+
+export const contacts = (state = initialState, action) => {
+  switch (action.type) {
+    case FETCH_DATA_SUCCESS:
+      return {
+        contacts: action.payload.results,
+        pages: action.payload.pages,
+      }
+    case FETCH_DATA_FAILURE:
+      toast.error(action.payload.message);
+      return {
+        message: action.payload.message
+      }
+    default:
+      return state;
+  }
+}
+```
+
+
+#### Redux in a nutshell
+
+<img class="plain" src="images/lesson_9/redux_animated.gif"/>
+
+
+
+### React + Redux
+
+<img class="plain"  src="https://s3.amazonaws.com/media-p.slid.es/uploads/745186/images/4839345/react-redux.svg" width="40%"/>
+
+
+#### React без Redux
+
+Два способа раздать данные по дочерним элементам:
+
+1. Tunneling AKA props drilling – пробрасывание props в глубь дерева с целью расшарить изменяемые данные между компонентами.
+2. Context API 
+
+Оба варианта отлично справляются со своими задачами*
+
+`*` в небольших приложениях
+
+
+<img class="plain"  src="images/lesson_9/react_with_and_without.svg" width="100%"/>
+
+
+Использование Redux не означает, что ВСЕ состояние приложения должно управляться redux.
+
+Хороший тон:
+
+* React отвечает за UI состояние (пользовательский ввод, открытие модальных окон)
+* Redux отвечает за бизнес логику (тема приложения, количество товаров в корзине)
+
+
+
+### Redux в коде
+
+`+` Redux-thunk для асинхронных событий
+
+
+#### Установка зависимостей
+
+```bash
+$ npm install redux
+$ npm install redux-thunk
+$ npm install react-redux
+```
+
+
+#### Создание constants
+
+```js
+// contacts
+export const GET_CONTACTS_REQUEST = '@@contacts/GET_CONTACTS_REQUEST';  // можно
+export const GET_CONTACTS_SUCCESS = '@@contacts/GET_CONTACTS_SUCCESS';  // задавать
+export const GET_CONTACTS_FAILURE = '@@contacts/GET_CONTACTS_FAILURE';  // любое значение
+```
+
+constants/ActionTypes.js или actions/types.js (любое название)
+
+
+```js
+import {
+  GET_CONTACTS_REQUEST,
+  GET_CONTACTS_SUCCESS,
+  GET_CONTACTS_FAILURE
+} from '../constants/ActionTypes'
+```
+
+
+#### Создание actions
+
+```js
+import {
+  GET_CONTACTS_REQUEST,
+  GET_CONTACTS_SUCCESS,
+  GET_CONTACTS_FAILURE
+} from '../constants/ActionTypes'
+
+import axios from 'axios'  // или fetch, или любой другой http клиент
+
+const getContactsSuccess = (contacts) => ({
+  type: GET_CONTACTS_SUCCESS,
+  payload: contacts
+})
+
+const getContactsStarted = () => ({
+  type: GET_CONTACTS_REQUEST
+})
+
+const getContactsFailure = (error) => ({
+  type: GET_CONTACTS_FAILURE,
+  payload: {
+    error  // error: error
+  }
+})
+
+export const getContacts = () => {
+  return (dispatch, getState) => {
+    console.log('state: ', getState())
+    dispatch(getContactsStarted())
+
+    axios
+      .get(`https://tt-front.now.sh/prepods`)
+      .then(res => {
+        dispatch(getContactsSuccess(res.data))
+      })
+      .catch(err => {
+        dispatch(getContactsFailure(err.message))
+      })
+  }
+}
+```
+
+actions/index.js
+
+
+#### Создание reducers
+
+```js
+import {
+  GET_CONTACTS_REQUEST,
+  GET_CONTACTS_SUCCESS,
+  GET_CONTACTS_FAILURE
+} from '../constants/ActionTypes'
+
+const initialState = {
+  loading: false,
+  contacts: [],
+  error: null
+}
+
+export default (state = initialState, action) => {
+  switch (action.type) {
+    case GET_CONTACTS_REQUEST:
+      return {
+        ...state,
+        loading: true
+      };
+    case GET_CONTACTS_SUCCESS:
+      return {
+        loading: false,
+        error: null,
+        contacts: [...state.contacts, action.payload]
+      };
+    case GET_CONTACTS_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error
+      };
+    default:
+      return state;
+  }
+}
+```
+
+reducers/contacts.js
+
+
+### rootReducer
+
+```js
+import { combineReducers } from 'redux'
+import contacts from './contacts'
+
+export default combineReducers({
+  contacts,
+})
+```
+
+reducers/index.js
+
+
+#### Создание store
+
+```js
+import { createStore, applyMiddleware } from 'redux'
+import { composeWithDevTools  } from 'redux-devtools-extension';
+import thunk from 'redux-thunk'
+import rootReducer from './reducers'
+
+export default createStore(rootReducer, composeWithDevTools({})(applyMiddleware(thunk)))
+```
+
+store.js
+
+
+#### Связывание с проектом
+
+```js
+import React from 'react';
+import { render } from 'react-dom';
+import { MainComponent } from './components/MainComponent';
+import { BrowserRouter as Router, Route } from 'react-router-dom'
+import { Provider } from 'react-redux'
+
+improt strore from './store'
+
+render(
+  <Provider store={store}>
+    <Router>
+      <Route path="/" component={MainComponent} />
+    </Router>
+  </Provider>,
+  document.getElementById('root')
+)
+```
+
+
+#### Использование в компонентах
+
+```js
+import React from 'react';
+import { connect } from 'react-redux';
+import { getContacts } from './actions';
+
+const Contacts = (props) => (
+  <>
+    <button onClick={() => props.getContacts()}>Get contacts now!</button>
+    {props.contacts && props.contacts.length
+      ? props.contacts.map(el => (<p key={el.id}>{el.name}</p>))
+      : <p>Nothing</p>
+    }
+  </>
+)
+
+const mapStateToProps = (state) => ({
+  contacts: state.contacts.contacts,
+})
+
+export default connect(
+  mapStateToProps,
+  { getContacts },
+)(Contacts)
+```
+
+
+#### Альтернативы redux-thunk
+
+* redux-saga
+* redux-observable
+
+
+#### Redux-saga
+
+<img class="plain"  src="images/lesson_9/redux-saga.png" width="50%"/>
+
+
+#### sagas.js
+
+```js
+import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
+import * as Api from actions
+
+function* fetchUser(action) {
+   try {
+      const user = yield call(Api.fetchUser, action.payload.userId);
+      yield put({type: "USER_FETCH_SUCCEEDED", user: user});
+   } catch (e) {
+      yield put({type: "USER_FETCH_FAILED", message: e.message});
+   }
+}
+
+/*
+  Starts fetchUser on each dispatched `USER_FETCH_REQUESTED` action.
+  Allows concurrent fetches of user.
+*/
+function* mySaga() {
+  yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
+}
+
+/*
+  Alternatively you may use takeLatest.
+
+  Does not allow concurrent fetches of user. If "USER_FETCH_REQUESTED" gets
+  dispatched while a fetch is already pending, that pending fetch is cancelled
+  and only the latest one will be run.
+*/
+function* mySaga() {
+  yield takeLatest("USER_FETCH_REQUESTED", fetchUser);
+}
+
+export default mySaga;
+```
+
+
+#### index.js
+
+```js
+import { createStore, applyMiddleware } from 'redux'
+import createSagaMiddleware from 'redux-saga'
+
+import reducer from './reducers'
+import mySaga from './sagas'
+
+// create the saga middleware
+const sagaMiddleware = createSagaMiddleware()
+// mount it on the Store
+const store = createStore(
+  reducer,
+  applyMiddleware(sagaMiddleware)
+)
+
+// then run the saga
+sagaMiddleware.run(mySaga)
+
+// ...
+```
