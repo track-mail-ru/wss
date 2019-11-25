@@ -167,6 +167,37 @@ JS объект, описывающий изменение состояния п
 ```
 
 
+#### Actions синхронные и асинхронные
+
+По умолчанию Redux поддерживает только синхронные события.
+
+Для доступа к асинхронным событиям, необходимо использовать дополнительные промежуточные слои (middleware):
+
+* redux-thunk
+* redux-saga
+* redux-observable
+
+
+Синхронные операции:
+
+* добавление элемента в список по нажатию кнопки "добавить"
+* изменение цвета кнопки
+* вычеркивание элемента из "списка дел"
+
+
+Асинхронные операции:
+
+* запрос в бд при добавлении элемента в список
+* логгирование на удаленный сервер при изменении цвета кнопки
+* установка задержки в 5 сек при вычеркивании элемента из списка
+
+Async flow: https://redux.js.org/advanced/async-flow
+
+How to dispatch a Redux action with a timeout?
+
+https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559#35415559
+
+
 #### Action creators
 
 Функции, возвращающие action.
@@ -232,7 +263,7 @@ export const contacts = (state = initialState, action) => {
 
 #### React без Redux
 
-Два способоа раздать данные по дочерним элементам:
+Два способа раздать данные по дочерним элементам:
 
 1. Tunneling AKA props drilling – пробрасывание props в глубь дерева с целью расшарить изменяемые данные между компонентами.
 2. Context API 
@@ -528,3 +559,8 @@ sagaMiddleware.run(mySaga)
 
 // ...
 ```
+
+
+### Redux-observable
+
+![rxjs logo](images/lesson_9/logo-rxjs-small.gif)
