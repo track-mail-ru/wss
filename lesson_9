@@ -561,6 +561,61 @@ sagaMiddleware.run(mySaga)
 ```
 
 
+Больше про redux-saga
+
+* https://redux-saga.js.org/docs/introduction/BeginnerTutorial.html
+* https://redux-saga.js.org/docs/recipes/
+
+
 ### Redux-observable
 
-![rxjs logo](images/lesson_9/logo-rxjs-small.gif)
+<img class="plain"  src="images/lesson_9/logo-rxjs-small.gif" width="100%"/>
+
+
+```js
+import { map, mergeMap } from 'rxjs/operators'
+import { ofType } from 'redux-observable'
+
+const FETCH_USER = 'FETCH_USER'
+const FETCH_USER_FULFILLED = 'FETCH_USER_FULFILLED'
+
+const fetchUser = prepod => ({ type: FETCH_USER, payload: prepod });
+const fetchUserFulfilled = payload => ({ type: FETCH_USER_FULFILLED, payload });
+
+const fetchUserEpic = action$ => action$.pipe(
+  ofType(FETCH_USER),
+  mergeMap(action =>
+    ajax.getJSON(`https://tt-front.now.sh/prepods/${action.payload}`).pipe(
+      map(response => fetchUserFulfilled(response))
+    )
+  )
+)
+
+const initState = {}
+
+const users = (state = initState, action) => {
+  switch (action.type) {
+    case FETCH_USER_FULFILLED:
+      return {
+        ...state,
+        [action.payload.prepod]: action.payload
+      };
+
+    default:
+      return state;
+  }
+};
+```
+
+
+Больше про redux-observable:
+
+* https://redux-observable.js.org/
+* https://redux-observable.js.org/docs/basics/Epics.html
+
+
+
+### Формы
+
+https://react-hook-form.com/
+
