@@ -6,6 +6,7 @@
 <img style="margin: 20px 0 0 50px" class="plain" src="images/atom.svg" width=190px height=190px />
 
 
+
 ![Important](images/important.jpg)
 
 
@@ -103,7 +104,7 @@
 1. Каждый компонент (обработчик) может создавать событие (action)
 2. Все события проходят через один диспетчер
 3. Каждое событие может быть обработано несколькими хранилищами (store)
-4. Одно хранилище данных может зависет от другого хранилища
+4. Одно хранилище данных может зависеть от другого хранилища
 5. Каждое хранилище данных может может влиять на перерендеринг нескольких представлений
 6. Каждое представление может зависеть от нескольких хранилищ
 
@@ -253,6 +254,13 @@ export const contacts = (state = initialState, action) => {
 #### Redux in a nutshell
 
 <img class="plain" src="images/lesson_9/redux_animated.gif"/>
+
+
+Читать больше
+
+* https://redux.js.org/introduction/getting-started
+* https://redux.js.org/advanced/usage-with-react-router
+* https://github.com/storeon/storeon
 
 
 
@@ -569,7 +577,7 @@ sagaMiddleware.run(mySaga)
 
 ### Redux-observable
 
-<img class="plain"  src="images/lesson_9/logo-rxjs-small.gif" width="100%"/>
+<img class="plain"  src="images/lesson_9/logo-rxjs-small.gif" width="30%"/>
 
 
 ```js
