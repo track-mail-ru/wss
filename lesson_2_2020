@@ -1,0 +1,160 @@
+### End to end testion with javascript
+
+Алексей Опалев
+
+<img class="plain" src="images/track.svg" width=200px height=200px />
+
+
+![Important](images/important.jpg)
+
+
+
+### План лекции
+
+1. e2e 
+1. Selenium 
+1. Puppeteer 
+1. Cypres
+1. Домашнее задание
+1. Практика
+
+
+
+### End To End (AKA e2e) 
+
+<img class="plain"  src="images/lesson_2_2020/end_to_end_by_google.png" />
+
+
+> The faster code fails, the less bugs we find in QA, the faster our QA cycles are -Edward Robinson
+
+
+### Определение 
+
+E2E (сквозное) тестирование – методология, используемая для тестирования приложения от начальной до конечной его логических точек.
+
+
+### Цель
+
+Е2Е устанавливает, что информация правильно распространяется по приложению, что зависимости работают ожидаемым от них образом.
+
+
+### Разница между интеграционными тестами и e2e
+
+E2E эмулирует поведение реального пользователя
+
+
+![E2E matters](https://cdn-media-1.freecodecamp.org/images/8NtBfj6HITU093EGaYhfynsMecih3civAcEY)
+
+
+<figure class="video_container">
+  <iframe src="https://twitter.com/i/status/1148986961207730176" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
+
+
+### Пример
+
+Е2Е в новостном приложении:
+
+1. Пользователь входит на главную страницу
+2. Пользователь получает контент
+3. Пользователь получает трэк пиксель
+4. Пользователь получает рекламу
+5. Пользователь скроллит два экрана вниз
+6. Пользователь получает новый контент
+7. Пользователь получает новую рекламу
+8. Пользователь кликает на пост с новостью
+9. ...
+1. Пользователь кликает на кнопку "комментировать"
+1. У пользователя появляется модальное окной с авторизацией
+1. ...
+
+
+### Для чего делается Е2Е
+
+- Регрессионные тесты (проверка корректности работы всего приложения)
+- Smoke тесты (проверка, что приложение работоспособно, например, проверка на 200)
+- DDT (data driven testing)
+
+
+### Кто делает E2E?
+
+- QA?
+- разработчик?
+
+
+E2E делают все
+
+
+### Что нужно для Е2Е
+
+- Понимание приложения/системы, которое необходимо протестировать
+- Категоризация тестов по функционалу: основной, критический, неестественный (edge cases) –– разгрузка сборщиков
+- Нужный фреймворк
+
+
+### Читать еще
+
+[E2E Testing Explained in Simple Words](https://dev.to/auksainis/e2e-testing-explained-in-simple-words-2e55)
+[Write Tests](https://kentcdodds.com/blog/write-tests)
+
+
+
+### Инструменты (AKA тулинг)
+
+- nodejs
+- test runner
+- assertion library
+- e2e test framework
+
+
+- selenium
+- puppeteer
+- cypress
+- protractor
+
+
+### Представление Е2Е
+
+TEST ‹–› BROWSER ‹–› SUT
+
+`*` SUT – system under test
+
+### Headless Browser
+
+- Не рендерит содержимое страницы (-› использует меньше памяти, быстро работает)
+- Есть API для управления состоянием и сценариями
+- Есть alpine сборки (-› мало зависимостей) 
+
+
+### Устройство браузера
+![Webkit renderer](/images/webkit-renderer.png)
+
+
+### Читать еще
+
+[Устройство веб браузера](https://www.slideshare.net/quangntta/web-browser-architecture-49196378)
+[Как работает headless chrome](https://habr.com/ru/company/oleg-bunin/blog/421137/)
+
+
+
+### Практическое использование
+
+
+#### Headless chrome. Запуск в терминале
+
+```bash
+$ alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
+$ chrome --headless --disable-gpu --crash-dumps-dir=/tmp --screenshot --window-size=412,732 https://mail.ru
+```
+
+
+#### Программное использование HC: Puppeteer
+
+`npm i --save puppeteer`
+
+
+#### Читать еще
+
+[Getting Started with Headless Chrome](https://developers.google.com/web/updates/2017/04/headless-chrome)
+
+
