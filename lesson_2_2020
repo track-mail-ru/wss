@@ -9,36 +9,38 @@
 
 
 
-### План лекции
+#### План лекции
 
-1. e2e 
-1. Selenium 
-1. Puppeteer 
-1. Cypres
+1. Что таоке e2e 
+1. Техники тестирования
+1. Инструменты 
+1. Headless chrome 
 1. Домашнее задание
 1. Практика
 
 
 
-### End To End (AKA e2e) 
+#### End To End (AKA e2e) 
 
-<img class="plain"  src="images/lesson_2_2020/end_to_end_by_google.png" />
-
-
-> The faster code fails, the less bugs we find in QA, the faster our QA cycles are -Edward Robinson
+<img class="plain"  src="images/e2e_by_google.png" />
 
 
-### Определение 
+> The faster code fails, the less bugs we find in QA, the faster our QA cycles are 
+
+Edward Robinson
+
+
+#### Определение 
 
 E2E (сквозное) тестирование – методология, используемая для тестирования приложения от начальной до конечной его логических точек.
 
 
-### Цель
+#### Цель
 
 Е2Е устанавливает, что информация правильно распространяется по приложению, что зависимости работают ожидаемым от них образом.
 
 
-### Разница между интеграционными тестами и e2e
+#### Разница между интеграционными тестами и e2e
 
 E2E эмулирует поведение реального пользователя
 
@@ -47,13 +49,11 @@ E2E эмулирует поведение реального пользоват�
 
 
 <figure class="video_container">
-  <iframe src="https://twitter.com/i/status/1148986961207730176" frameborder="0" allowfullscreen="true"> </iframe>
+  <iframe src="https://www.youtube.com/embed/mC3KO47tuG0" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
 
 
-### Пример
-
-Е2Е в новостном приложении:
+#### Е2Е в новостном приложении:
 
 1. Пользователь входит на главную страницу
 2. Пользователь получает контент
@@ -69,14 +69,14 @@ E2E эмулирует поведение реального пользоват�
 1. ...
 
 
-### Для чего делается Е2Е
+#### Для чего делается Е2Е
 
 - Регрессионные тесты (проверка корректности работы всего приложения)
 - Smoke тесты (проверка, что приложение работоспособно, например, проверка на 200)
 - DDT (data driven testing)
 
 
-### Кто делает E2E?
+#### Кто делает E2E?
 
 - QA?
 - разработчик?
@@ -85,21 +85,32 @@ E2E эмулирует поведение реального пользоват�
 E2E делают все
 
 
-### Что нужно для Е2Е
+#### Что нужно для Е2Е
 
 - Понимание приложения/системы, которое необходимо протестировать
 - Категоризация тестов по функционалу: основной, критический, неестественный (edge cases) –– разгрузка сборщиков
 - Нужный фреймворк
 
 
-### Читать еще
+#### Лучшие практики
+
+- Сценарий теста готовится исходя из вероятного поведения пользователя
+- Не тестировать ВСЕ сценарии
+- Определить критические точки приложения
+- Выполнять е2е тесты после линтеров, юнитов и интеграционных тестов
+- Запускать тесты в окружении близком/идентичном боевому
+- Оптимизация запуска и сворачивания е2е тестов
+
+
+#### Читать еще
 
 [E2E Testing Explained in Simple Words](https://dev.to/auksainis/e2e-testing-explained-in-simple-words-2e55)
 [Write Tests](https://kentcdodds.com/blog/write-tests)
+[All You Need to Know About End to End Testing](https://www.lambdatest.com/blog/all-you-need-to-know-about-end-to-end-testing/)
 
 
 
-### Инструменты (AKA тулинг)
+#### Инструменты (AKA тулинг)
 
 - nodejs
 - test runner
@@ -113,31 +124,33 @@ E2E делают все
 - protractor
 
 
-### Представление Е2Е
 
-TEST ‹–› BROWSER ‹–› SUT
+Представление Е2Е
+
+#### TEST ‹–› BROWSER ‹–› SUT
 
 `*` SUT – system under test
 
-### Headless Browser
+
+#### Headless Browser
 
 - Не рендерит содержимое страницы (-› использует меньше памяти, быстро работает)
 - Есть API для управления состоянием и сценариями
 - Есть alpine сборки (-› мало зависимостей) 
 
 
-### Устройство браузера
-![Webkit renderer](/images/webkit-renderer.png)
+#### Устройство браузера
+<img src="images/webkit-renderer.png" width="70%" />
 
 
-### Читать еще
+#### Читать еще
 
 [Устройство веб браузера](https://www.slideshare.net/quangntta/web-browser-architecture-49196378)
 [Как работает headless chrome](https://habr.com/ru/company/oleg-bunin/blog/421137/)
 
 
 
-### Практическое использование
+#### Практическое использование
 
 
 #### Headless chrome. Запуск в терминале
@@ -150,11 +163,85 @@ $ chrome --headless --disable-gpu --crash-dumps-dir=/tmp --screenshot --window-s
 
 #### Программное использование HC: Puppeteer
 
+![Puppeteer](images/puppeteer.png)
+
+
+![Puppeteer](images/puppeteer-pyramid-ext.png)
+
+
 `npm i --save puppeteer`
+
+
+#### Puppeteer не в тестах
+
+- парсинг ресурсов, зависимых от js (spa)
+- получение pdf параллельно с парсингом
+
+
+#### Screenshot
+
+```js
+const puppeteer = require('puppeteer');
+
+(async() => {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.goto('https://dobro.mail.ru/');
+  await page.screenshot({path: 'example.png'});
+  await browser.close();
+})();
+```
+
+
+#### Сбор данных
+
+```js
+const puppeteer = require('puppeteer');
+
+(async() => {
+  const browser = await puppeteer.launch({headless: false});
+  const page = await browser.newPage();
+
+  await page.goto('https://mail.ru/');
+
+  // Type into search box.
+  await page.type('#q', 'Мартин Комитски');
+
+  await page.type('#q', String.fromCharCode(13));
+
+  // Wait for the results page to load and display the results.
+  const resultsSelector = '.result__li .result__title > a';
+  await page.waitForSelector(resultsSelector);
+
+  // Extract the results from the page.
+  const links = await page.evaluate(resultsSelector => {
+    const anchors = Array.from(document.querySelectorAll(resultsSelector));
+    return anchors.map(anchor => {
+      const title = anchor.textContent.trim();
+      return `${title} - ${anchor.href}`;
+    });
+  }, resultsSelector);
+  console.log(links.join('\n'));
+
+  await browser.close();
+})();
+
+```
 
 
 #### Читать еще
 
 [Getting Started with Headless Chrome](https://developers.google.com/web/updates/2017/04/headless-chrome)
+[The power of headless chrome: video](https://www.youtube.com/watch?v=lhZOFUY1weo)
+
+
+
+#### Домашнее задание
+
+
+
+#### Практика
+
+
 
 
