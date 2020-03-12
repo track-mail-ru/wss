@@ -1,0 +1,477 @@
+### WebSockets. Http2. WebRTC.
+
+Алексей Опалев. Мартин Комитски
+
+<img class="plain" src="images/track.svg" width=200px height=200px />
+
+
+![Important](images/important.jpg)
+
+
+
+#### План лекции
+
+1. WebSockets
+1. WebRTC
+1. Домашнее задание
+1. Практика
+
+
+
+#### Previously on RTT
+
+
+- polling
+- long polling
+- sse
+- <font color="#red">websockets</font>
+- http2
+
+
+Long Polling
+![Long Polling](images/lesson_4_2020/lp.gif)
+
+
+SSE
+
+![SSE](images/lesson_4_2020/sse.gif)
+
+
+WebSocket
+
+![WebSocket](images/lesson_4_2020/ws.gif)
+
+
+
+### Зачем
+
+Реализация надежной коммуникации (Evenv-driven) клиента с сервером с минимальными задержками.
+
+В каких приложения необходимо учитывать задержки и надежность передачи данных?
+
+
+- онлайн игры
+- системы сбора информации (мониторинги, трекеры доставки) 
+- финансовые торговые площадки
+- инструменты для совместной разработки
+- социальные платформы (сообщения, статусы, лента, обновления профиля)
+- прочий софт, который зависит от обновления состояния
+
+
+#### Почему бы не HTTP?
+
+- HTTP 0.9 - 1991 - только GET, нет заголовков
+- HTTP 1.0 - 1996 - нет постоянного соединения
+- HTTP 1.1 - 1999 - все еще однонаправленная передача данных (half-duplex), много заголовков
+
+
+`*` HTTP2 способен заменить функционал WS
+
+
+#### Сравнение RTT
+
+![](images/lesson_4_2020/diff.png)
+
+
+#### Читать
+
+- [Evolution of HTTP](https://medium.com/platform-engineer/evolution-of-http-69cfe6531ba0)
+
+
+
+#### WebSocket
+
+Протокол WebSocket – протокол полнодуплексной связи (может передавать и принимать одновременно) **поверх TCP-соединения**, предназначенный для обмена сообщения **между браузером и веб-сервером** в режиме реального времени. С помощье WS API вы можете отправить сообщение на сервер и получить ответ без выполнения отдельного HTTP-запроса, при этом этот процесс будет событийно-управляемым.
+
+
+WS разрабатывался для обхода ограничений HTTP
+
+- формат запрос/ответ
+- тяжелые заголовки
+- ограничение по соединениям
+- блокировка загрузок
+
+
+#### Обмен данными
+
+![WebSocket](images/lesson_4_2020/ws.gif)
+
+
+#### Поддержка браузерами
+
+![WebSocket caniuse](images/lesson_4_2020/ws-caniuse.png)
+
+
+#### Формально
+
+>  The WebSocket Protocol enables two-way communication between a client
+   wrunning untrusted code in a controlled environment to a remote host
+   that has opted-in to communications from that code.  The security
+   model used for this is the origin-based security model commonly used
+   by web browsers.
+
+
+>  The protocol consists of an opening handshake
+   followed by basic message framing, layered over TCP.  The goal of
+   this technology is to provide a mechanism for browser-based
+   applications that need two-way communication with servers that does
+   not rely on opening multiple HTTP connections (e.g., using
+   XMLHttpRequest or <iframe>s and long polling).
+
+
+https://tools.ietf.org/html/rfc6455 – Abstract
+
+
+- Стандарт W3C/IETF – [RFC 6455](https://tools.ietf.org/html/rfc6455)
+- Использует протокол WebSocket ([HYBD](https://tools.ietf.org/html/rfc6455#section-5.2) вместо HTTP)
+- Двунаправленный поток передачи данных (поддержка и utf8, и бинарных потоков данных)
+- Это не TCP сокет
+
+
+#### WebSocket. Then
+
+- Соединение устанавлиется с помощью `апгрейда` протоколов: `HTTP` –> `WebSocket`
+    - WebSocket использует HTTP для установления коннекта и его апгрейда
+- Работает на 80/443 портах
+  - HTTP-совместимое рукопожатие
+  - поддерживает cookie-based аутентификацию
+- WebSockets & Secure Web Sockets
+  - `ws://`
+  - `wss://`
+
+
+#### Upgrade handshake
+
+```js
+// browser request to the server
+GET /demo HTTP/1.1
+Upgrade: WebSocket
+Connection: Upgrade
+Host: example.com
+Origin: http://example.com
+WebSocket-Protocol: sample
+
+// server
+response HTTP/1.1 101 Web Socket Protocol Handshake
+Upgrade: WebSocket
+Connection: Upgrade
+WebSocket-Origin: http://example.com
+WebSocket-Location: ws://example.com/demo
+WebSocket-Protocol: sample
+```
+
+
+#### Преимущества
+
+- Каждое сообщение (frame) несет только 2 "лишних" байта
+- Отсутствие задержек (нет вновь устанавливающихся TCP соединений)
+- Нет накладных расходов на сервере в сравнении с "polling" техниками
+
+
+#### Преймущества. Итого
+
+- Сокращение задержки (150ms -> 50ms)
+- Сокращение объема данных, передаваемых по сети (*kbytes -> 2 bytes)
+
+
+#### Создание WebSocket
+
+```js
+// если страница загружена по http://
+const ws = new WebSocket('ws://example.com/ws');
+ 
+// если страница загружена по https://
+const ws = new WebSocket('wss://example.com/ws');
+ 
+// События WebSocket
+ws.addEventListener('open', listener);  // соединение установлено
+ws.addEventListener('message', listener);  // пришло новое сообщение
+ws.addEventListener('error', listener);  // ошибка
+ws.addEventListener('close', listener);  // сокет закрылся
+```
+
+
+#### Взаимодействие c WebSocket
+
+```js
+ws.onopen = () => {
+    console.log('Соединение установлено, можно отправлять сообщения!');
+ 
+    // Отправка текста
+    ws.send('Hello!');
+    ws.send(JSON.stringify({ x: 100, y: 150 }));
+
+    // Отправка бинарных данных (например файлы из формы)
+    ws.send(form.elements[0].file);
+};
+```
+
+
+#### Обработка ошибки и закрытия соединения
+
+```js
+ws.onerror = (error) => {
+    // произошла ошибка в отправке
+	// приёме данных или сетевая ошибка
+    console.log('Ошибка ' + error.message);
+};
+
+ws.onclose = (event) => {
+    // 1000 - штатное закрытие сокета (коды WebSocket из 4х  цифр)
+    // 1001 - удалённая сторона исчезла
+    // 1002 - ошибка протокола
+    // 1003 - неверный запрос
+    console.log('Код: ' + event.code);
+    console.log('Причина: ' + event.reason);
+};
+```
+
+
+#### Обработка сообщений с сервера
+
+```js
+ws.onmessage = (event) => {
+    const data = event.data;
+    const message = JSON.parse(data);
+ 
+    console.log('Прислали сообщение: ' + message.text);
+ 
+    // или, если есть глобальная шина событий
+    bus.emit(message.event, message.payload);
+};
+```
+
+
+#### Отправка бинарных данных
+
+```js
+const buffer = new ArrayBuffer(128)
+socket.send(buffer);
+
+const intview = new Uint32Array(buffer);
+socket.send(intview);
+
+const blob = new Blob([buffer]);
+socket.send(blob);
+```
+
+
+#### Когда использовать WebSocket
+
+- Предположения?
+- Реальные примеры?
+
+
+#### Когда не использовать WebSocket
+
+Можно использовать в любой ситуации, ввиду широкой поддержки со стороны библиотек
+
+
+#### Когда не использовать WebSocket?!
+
+- Приложение прототип без нагрузок – самый простой поллинг
+- Приложение, только отображающее данные – SSE
+
+
+#### WebSocket. Заключение
+
+- Эффективно обеспечивает обмен данными в реальном времени
+- Отличная оптимизация ресурсов (задержка, объем передаваемых данных)
+- Хорошая поддержка со стороны браузеров
+- Может быть полностью заменен http2 :)
+
+
+
+### Про http2
+
+
+
+### WebRTC
+
+
+![Centralized connection](images/lesson_4_2020/centralized.png)
+
+
+![P2P connection](images/lesson_4_2020/p2p-connection.png)
+
+
+Real Time Peer-To-Peer Communication
+
+API, предоставляемое браузером и позволяющее организовать P2P соединение и передачу данных <strong>напрямую</strong> между браузерами
+
+
+#### Возможности
+
+- Mediastream
+- RTCPeerConnection
+- RTCDataChannel
+
+
+![WebRTC Protocol Stack](images/lesson_4_2020/webrtc-protocol.png)
+
+
+#### Области применения
+
+- ?
+
+
+- медиа-стриминг
+- видео-общение
+- онлайн-игры
+- чаты
+- распределённые файловые системы
+- снижение нагрузки на сервера при передаче данных
+
+
+#### Поддержка браузерами
+
+![](images/lesson_4_2020/wrtc-caniuse.png)
+
+
+#### Mediastream
+
+- Камера
+- Микрофон
+
+`*` navigator.mediaDevices.getUserMedia({video: true})
+
+
+- Skype
+- Zoom
+- Staply
+- Fuze
+
+
+#### Возможности
+
+- Моушн детектор
+- Распознование жестов
+- Распознование эмоций
+- Распознование звуков
+- Запись видео
+
+
+
+#### Установка соединения
+
+    <p>Для установления <em>peer-to-peer</em> оба клиента должны знать адрес и порт, по которому его оппонент слушает и может получить входящие данные. Для передачи этой информации необходим вспомогательный сервер &mdash; <strong>signalling-сервер</strong></p>
+        <p>Также кроме адресов и портов, клиенты должны договориться о <strong>параметрах устанавливаемой сессии</strong>. Например об использовании тех или иных кодеков и их параметров в случае аудио- и видеосвязи. Формат данных, описывающих всевозможные свойства соединения, называется SDP&nbsp;&mdash;&nbsp;Session Description Protocol</p>
+
+
+#### SDP
+
+Session Description Protocol [RFC 4566](https://tools.ietf.org/html/rfc4566)
+
+```
+a=candidate:4022866446 1 udp 2113937151 192.168.0.197 36768 typ host generation 0
+a=candidate:4022866446 2 udp 2113937151 192.168.0.197 36768 typ host generation 0
+a=candidate:2706108158 1 tcp 1509957375 192.168.0.197 0 typ host generation 0
+a=candidate:2706108158 2 tcp 1509957375 192.168.0.197 0 typ host generation 0
+a=candidate:1853887674 1 udp 1845501695 46.2.2.2 36768 typ srflx raddr 192.168.0.197 rport 36768 generation 0
+a=candidate:1853887674 2 udp 1845501695 46.2.2.2 36768 typ srflx raddr 192.168.0.197 rport 36768 generation 0
+a=candidate:2157334355 1 udp 33562367 180.6.6.6 54278 typ relay raddr 46.2.2.2 rport 38135 generation 0
+a=candidate:2157334355 2 udp 33562367 180.6.6.6 54278 typ relay raddr 46.2.2.2 rport 38135 generation 0
+```
+
+
+#### Offer
+
+```js
+pc.createOffer(function(offer) {
+  pc.setLocalDescription(new RTCSessionDescription(offer), function() {
+    // send the offer to a server to be forwarded to the friend you're calling.
+  }, error);
+}, error);
+```
+
+
+#### Answer
+
+```js
+pc.setRemoteDescription(new RTCSessionDescription(offer), function() {
+  pc.createAnswer(function(answer) {
+    pc.setLocalDescription(new RTCSessionDescription(answer), function() { 
+      // send the answer to a server to be forwarded back to the caller (you)
+    }, error);
+  }, error);
+}, error);
+```
+
+
+#### ICE
+
+Interactive Connectivity Esablishment
+
+Метод резолвинга клиентских адресов, скрываемых за NAT
+
+`*` долго выполняется
+
+
+#### STUN & TURN
+
+- STUN - get ip
+- TURN - avoid firewall
+
+
+#### Определение адреса и проверка доступности
+
+Для определения адреса клиента для WebRTC соединений используются дополнительные сервера **STUN - Session Traversal Utilities for NAT**.
+
+Задачу взаимодействия со STUN и задачу проверки доступности берет на себя **ICE -  Interactive Connectivity Establishment** фреймворк, встроенный в браузер
+
+
+![STUN](images/lesson_4_2020/stun.png)
+
+
+```js
+const iceServers = [{ url: 'stun:stun.l.google.com:19302' }];
+const peerConnection = new RTCPeerConnection({iceServers}, constraints);
+
+peerConnection.setConfiguration(configuration);
+peerConnection.onicecandidate = (event) => {
+  // функция, с помощью которой RTCPeerConnection отправляет на сервер
+  // сообщения, которые сервер должен вернуть другому браузеру
+};
+peerConnection.onaddstream = (event) => {
+  // вызывается, когда удалённая сторона присылает новый stream с данным
+};
+const rtpSender = RTCPeerConnection.addTrack(track, stream...);
+```
+
+
+#### TURN
+
+Traversal Using Relays around NAT
+
+TURN обеспечивает передачу медиа контента через специальный сервер, когда использование STUN не возможно
+
+
+![](images/lesson_4_2020/turn.png)
+
+
+#### oRTC
+
+Object Real Time Communcations
+
+
+Подход Microsoft к реализации своей версии WebRTC.
+
+Основные причины:
+
+- Низкоуровневое API
+- Удобное API для работы с JS
+- Отказ от SDP
+
+
+#### Hands on WebRTC
+
+- https://webrtcglossary.com/
+- https://www.twilio.com/docs/video/javascript-v1-getting-started 
+- https://tools.ietf.org/html/rfc7478
+
+
+### Домашнее задание 4
+
+
+
+
